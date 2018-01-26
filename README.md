@@ -22,3 +22,12 @@ clang++ -std=c++14 -I /usr/local/boost-<your_boost_version>/include -L /usr/loca
 ```
 because the only boost library I used is filesystem.
 
+(
+
+small tip: to get the string of the path:
+```
+boost::filesystem::path p;
+p.string();
+```
+)
+

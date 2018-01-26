@@ -1,15 +1,19 @@
-#include<iostream>
-#include<fstream>
+#include "snapshot.h"
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <boost/filesystem.hpp>
 
-using std::string;
-using std::cout;
-using std::cerr;
-using std::endl;
+std::ostream& operator<<(std::ostream & os, const snapshot & s) {
+	os << "The summary: \n"
+		<< "Total line: " << s.total_line << "\n"
+		<< "Total comment line: " << s.total_comment << "\n"
+		<< "Total file number: " << s.total_file << "\n"
+		<< std::endl;
+	return os;
+}
 
-/*
-This method may not be used.
-*/
-bool is_empty_string(string l) {
+bool snapshot::is_empty_string(std::string l) {
 	for (auto c : l) {
 		if (!isspace(c))
 			return false;
@@ -17,19 +21,43 @@ bool is_empty_string(string l) {
 	return true;
 }
 
-int main(int argc, char* argv[]) {
-	if (argc <= 1) {
-		cerr << "Need more arguments!" << endl;
+void snapshot::get_snapshot() {
+	walk(root_dir);
+}
+
+void snapshot::walk(boost::filesystem::path p) {
+	if (boost::filesystem::is_regular_file(p)) {
+		// cout << p.filename() << endl;
+		count_comment(p);
+		total_file ++;
+		return;
 	}
-	string file_path(argv[1]);
-	std::ifstream f(file_path);
-	string line;
+
+	for (auto entry : boost::filesystem::directory_iterator(p)) {
+		walk(entry);
+	}
+}
+
+// This version is using boost::filesystem::recursive_directory_iterator
+// void walk2(path p) {
+// 	for (auto entry : recursive_directory_iterator(p)) {
+// 		if (is_regular_file(entry)) {
+// 			cout << entry.path().filename() << endl;
+// 		}
+// 	}
+// }
+
+void snapshot::count_comment(boost::filesystem::path file_path) {
+	// std::string file_path(argv[1]);
+	// std::string path {file_path};
+	std::ifstream f(file_path.string());
+	std::string line;
 	int line_number {0};
 	bool in_comment {false}, start_line_occupied {false};
 	int total_comment_line {0}, comment_start_line {0};
 
 	while(std::getline(f, line)) {
-		// cout << line << endl;
+
 		line_number++;
 		decltype(line.size()) i = 0;
 		while (i < line.size()) {
@@ -91,7 +119,8 @@ int main(int argc, char* argv[]) {
 		total_comment_line += line_number - comment_start_line;
 	}
 
-	cout << "Total line number / comment line number: " << line_number << "/" << total_comment_line << endl;
-
-	return 0;
+	// update the class member.
+	total_comment += total_comment_line;
+	// the line_number is the total number of line of this file.
+	total_line += line_number;
 }

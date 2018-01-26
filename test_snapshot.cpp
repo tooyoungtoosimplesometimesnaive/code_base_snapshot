@@ -2,9 +2,8 @@
 #include "snapshot.h"
 
 int main() {
-	snapshot s;
-	std::cout << s.total_line <<std::endl;
-	std::cout << s.total_file <<std::endl;
-	std::cout << "ok!"  <<std::endl;
+	snapshot s("comment_counter_test_suite");
+	s.get_snapshot();
+	std::cout << s <<std::endl;
 	return 0;
 }
